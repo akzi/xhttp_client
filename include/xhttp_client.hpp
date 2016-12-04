@@ -8,9 +8,13 @@ namespace xhttp_client
 		using response_callback = std::function<void(response &)>;
 		client(xnet::connection &&conn)
 			:conn_(std::move(conn)),
-			response_(conn)
+			response_(conn_)
 		{
 
+		}
+		~client()
+		{
+			close();
 		}
 		client &append_entry(const std::string &name, const std::string &value)
 		{
@@ -42,6 +46,9 @@ namespace xhttp_client
 		}
 		bool do_get(const std::string &url, response_callback handle)
 		{
+			bool result = true;
+			method_ = "GET";
+			if (!check()) return false;
 			conn_.regist_send_callback([&](std::size_t len) {
 				if (len == 0)
 				{
@@ -49,8 +56,13 @@ namespace xhttp_client
 					return;
 				}
 			});
-			if(!check())
-				return false;
+			conn_.async_send(http_builder_.
+				set_method(method_).
+				set_url(url).
+				build_req());
+			conn_.async_recv_some();
+			xcoroutine::yield(response_.parser_done_callback_);
+			handle(response_);
 			return true;
 		}
 		bool do_post(const std::string &url, response_callback handle)
@@ -69,13 +81,20 @@ namespace xhttp_client
 	private:
 		bool check()
 		{
+			if (method_ == "GET")
+			{
+				if (body_.size() ||
+					files_.size() ||
+					forms_.size())
+					return false;
+				return true;
+			}
 			if (body_.size())
 			{
-				if (files_.size())
-					return false;
-				if (forms_.size())
+				if (files_.size() || forms_.size())
 					return false;
 			}
+			return true;
 		}
 		void close()
 		{
@@ -86,9 +105,10 @@ namespace xhttp_client
 			return "----XHttpClientFormBoundaryuwYcfA2AIgxqIxA0";
 		}
 		bool reload_;
+		std::string method_;
+		xnet::connection conn_;
 		response response_;
 		xhttper::http_builder http_builder_;
-		xnet::connection conn_;
 		std::string url_;
 		std::string body_;
 		std::list<std::string> files_;

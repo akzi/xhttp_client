@@ -1,29 +1,32 @@
 #pragma once
-#include "../include/xhttp_client.hpp"
+#include "../include/client_maker.hpp"
 #include "../../xtest/include/xtest.hpp"
+#include <iostream>
 
 xtest_run;
 
 XTEST_SUITE(client)
 {
-	void do_req(xnet::connection &conn)
+	void do_get(xhttp_client::client &&client)
 	{
-		xhttp_client::client client(std::move(conn));
 		client.do_get("/", [](xhttp_client::response &resp) 
 		{
-
+			std::cout << resp.get_body() << std::endl;
 		});
 	}
 	XUNIT_TEST(do_test)
 	{
 		xnet::proactor pro;
-		auto connector = pro.get_connector();
-		connector.async_connect("127.0.0.1", 9001);
-
-		connector.bind_fail_callback([](std::string) {
-		
-		}).bind_success_callback([](xnet::connection &&conn) {
-			do_req(std::move(conn));
+		xhttp_client::client_maker maker(pro);
+		maker.get_client("127.0.0.1", 9001, 
+			[](const std::string & error_code, xhttp_client::client &&client)
+		{
+			if (error_code.size())
+			{
+				std::cout << "error£º" << error_code << std::endl;
+				return;
+			}
+			do_get(std::move(client));
 		});
 		pro.run();
 	}
