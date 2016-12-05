@@ -14,6 +14,15 @@ XTEST_SUITE(client)
 			std::cout << resp.get_body() << std::endl;
 		});
 	}
+	void do_post(xhttp_client::client &&client)
+	{
+		client.append_entry("Connection", "keep-alive");
+		client.append_file("name1","index.html");
+		client.do_post("/", [&](xhttp_client::response &resp) {
+
+			std::cout << resp.get_body() << std::endl;
+		});
+	}
 	XUNIT_TEST(do_test)
 	{
 		xnet::proactor pro;
@@ -26,7 +35,7 @@ XTEST_SUITE(client)
 				std::cout << "error£º" << error_code << std::endl;
 				return;
 			}
-			do_get(std::move(client));
+			do_post(std::move(client));
 		});
 		pro.run();
 	}
