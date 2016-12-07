@@ -1,12 +1,12 @@
 #pragma once
-#include "xhttp_client.hpp"
+#include "response.hpp"
 namespace xhttp_client
 {
 	class downloader
 	{
 	public:
-		downloader(client &_client)
-			:client_(_client)
+		downloader(response& resp)
+			:resp_(resp)
 		{
 
 		}
@@ -14,11 +14,17 @@ namespace xhttp_client
 		{
 
 		}
+		downloader &set_path(const std::string &path)
+		{
+			path_ = path;
+			return *this;
+		}
 		bool do_download(std::vector<std::string> &files)
 		{
-
+			return true;
 		}
 	private:
-		client &client_;
+		std::string path_;
+		response &resp_;
 	};
 }

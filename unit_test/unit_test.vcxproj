@@ -112,6 +112,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\client_maker.hpp" />
     <ClInclude Include="..\include\detail\detail.hpp" />
+    <ClInclude Include="..\include\downloader.hpp" />
     <ClInclude Include="..\include\response.hpp" />
     <ClInclude Include="..\include\xhttp_client.hpp" />
   </ItemGroup>
