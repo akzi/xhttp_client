@@ -1,5 +1,6 @@
 #pragma once
 #include "../include/client_maker.hpp"
+#include "../include/downloader.hpp"
 #include "../../xtest/include/xtest.hpp"
 #include <iostream>
 
@@ -21,6 +22,25 @@ XTEST_SUITE(client)
 		client.do_post("/", [&](xhttp_client::response &resp) {
 
 			std::cout << resp.get_body() << std::endl;
+		});
+	}
+	void do_download_file(xhttp_client::client &&client)
+	{
+		client.do_get("/", [&](xhttp_client::response &resp)
+		{
+			std::cout << resp.get_status() << std::endl;
+			std::cout << resp.get_status_str() << std::endl;
+
+			std::vector<std::string> files;
+			xhttp_client::downloader downloader(resp);
+			downloader.set_path("D:/");
+			if (!downloader.do_download(files))
+			{
+				std::cout << "download file error" << std::endl;
+				return;
+			}
+			for (auto &itr : files)
+				std::cout << itr << std::endl;
 		});
 	}
 	XUNIT_TEST(do_test)
