@@ -54,7 +54,7 @@ XTEST_SUITE(client)
 	{
 		xnet::proactor pro;
 		xhttp_client::client_maker maker(pro);
-		maker.get_client("127.0.0.1", 3000,
+		maker.get_client("127.0.0.1", 3001,
 			[](const std::string & error_code, xhttp_client::client &&client)
 		{
 			if (error_code.size())
